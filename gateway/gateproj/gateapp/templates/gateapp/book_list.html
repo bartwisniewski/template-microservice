@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}
+Books
+{% endblock %}
+{% block content %}
+<div>
+    <h4>Books:</h4>
+    <ul>
+        {% for item in object_list %}
+            <li>
+                <span>{{item.title}}, {{item.author}}, {{item.year}}</span>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
+    <div>
+        <a href="{% url 'book-create' %}">|+|</a>
+    </div>
+</div>
+{% endblock %}

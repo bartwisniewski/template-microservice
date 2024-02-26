@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}
+API GATEWAY - home page
+{% endblock %}
+{% block content %}
+<div>
+    <h1>Hello, this is template for API GATEWAY design patter</h1>
+    {% if session %}
+        <h1>welcome {{session.userinfo.name}}!</h1>
+        <p><a href="{% url 'logout' %}">Logout</a></p>
+    {% else %}
+        <h1>welcome Guest</h1>
+        <p><a href="{% url 'login' %}">Login</a></p>
+    {% endif %}
+</div>
+{% endblock %}
