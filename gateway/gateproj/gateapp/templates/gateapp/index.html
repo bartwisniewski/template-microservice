@@ -4,13 +4,13 @@ API GATEWAY - home page
 {% endblock %}
 {% block content %}
 <div>
-    <h1>Hello, this is template for API GATEWAY design patter</h1>
+    <h1>Hello, this is template for API GATEWAY design pattern.</h1>
     {% if session %}
         <h1>welcome {{session.userinfo.name}}!</h1>
+        <p>{{session}}</p>
         <p><a href="{% url 'logout' %}">Logout</a></p>
     {% else %}
-        <h1>welcome Guest</h1>
-        <p><a href="{% url 'login' %}">Login</a></p>
+        <h1>Please <a href="{% url 'login' %}">log in</a>.</h1>
     {% endif %}
 </div>
 {% endblock %}
