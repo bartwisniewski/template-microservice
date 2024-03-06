@@ -6,6 +6,9 @@
         {{ form }}
         <button type="submit" class="btn btn-primary">Save</button>
     </form>
+    {% if api_error %}
+        {{api_error}}
+    {% endif %}
     <a href="{% url 'books' %}"><</a>
 </div>
 {% endblock %}

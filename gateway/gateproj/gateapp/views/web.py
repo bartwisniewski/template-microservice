@@ -2,12 +2,12 @@ from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
+from rest_framework import status
+
 from .auth import OAuthSessionMixin
 from ..forms import BookForm
-from ..interfaces.book import BooksTestInterface as BooksInterface
-
-
-books_interface = BooksInterface()
+from ..interfaces.book import book_interface
+from ..serializers import BookSerializer
 
 
 class IndexView(TemplateView):
@@ -28,7 +28,7 @@ class BookListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return books_interface.get_books()
+        return book_interface.get_books()
 
 
 class BookCreateView(OAuthSessionMixin, FormView):
@@ -41,6 +41,16 @@ class BookCreateView(OAuthSessionMixin, FormView):
     success_url = reverse_lazy("books")
     redirect_url = reverse_lazy("books")
 
+    def form_invalid(self, form, **kwargs):
+        context = self.get_context_data(form=form)
+        if 'api_error' in kwargs:
+            context['api_error'] = kwargs['api_error']
+        return self.render_to_response(context)
+
     def form_valid(self, form):
-        books_interface.add_book(form.cleaned_data)
-        return super().form_valid(form)
+        serializer = BookSerializer(data=form.cleaned_data)
+        serializer.is_valid()
+        api_response = book_interface.add_book(serializer.data)
+        if status.is_success(api_response.status_code):
+            return super().form_valid(form)
+        return self.form_invalid(form=form, api_error=api_response.reason)

@@ -1,0 +1,39 @@
+version: '3.9'
+name: template-microservice
+services:
+  books:
+    build:
+      context: ../../books/
+      dockerfile: ./deployment/Dockerfile
+    container_name: "books"
+    expose:
+      - "80"
+    networks:
+      - back
+
+  gateway:
+    build:
+      context: ../../gateway/
+      dockerfile: ./deployment/Dockerfile
+    container_name: "gateway"
+    ports:
+      - "8001:8000"
+    networks:
+      - front
+      - back
+    environment:
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=gateproj.settings
+      - BOOKS_HOST=http://books:80
+    depends_on:
+      books:
+        condition: service_started
+
+networks:
+  front:
+    driver: bridge
+    name: template_microservice_front
+  back:
+    driver: bridge
+    internal: true
+    name: template_microservice_back

@@ -1,4 +1,8 @@
 import dataclasses
+import os
+import requests
+
+from ..serializers import BookSerializer
 
 
 @dataclasses.dataclass
@@ -19,3 +23,26 @@ class BooksTestInterface:
         book = Book(**book_data)
         self.books.append(book)
         return True
+
+
+class BooksServiceInterface:
+    Serializer = BookSerializer
+
+    def __init__(self):
+        self.url = os.environ.get("BOOKS_HOST", None)
+
+    def get_books(self) -> list[Book]:
+        endpoint = "/books/"
+        response = requests.get(self.url + endpoint)
+        data = response.json()
+        serializer = self.Serializer(data=data, many=True)
+        serializer.is_valid()
+        return serializer.validated_data
+
+    def add_book(self, book_data: dict):
+        endpoint = "/books/"
+        response = requests.post(self.url + endpoint, json=book_data)
+        return response
+
+
+book_interface = BooksServiceInterface()
