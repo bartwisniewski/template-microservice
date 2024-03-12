@@ -25,8 +25,7 @@ SECRET_KEY = 'django-insecure-x(oh8&jvjdo=#6no8q6*&6(u=4qz@4nostaw7pa4^wl!grbb89
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -162,4 +161,29 @@ JWT_AUTH = {
     'JWT_AUDIENCE': f'{AUTH0_API_IDENTIFIER}',
     'JWT_ISSUER': f'https://{AUTH0_DOMAIN}/',
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+}
+
+CSRF_TRUSTED_ORIGINS = ["http://frontend:8000"]
+
+# Django Cors Headers
+CORS_ALLOWED_ORIGINS = [
+    "http://frontend:8000",
+]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'gateapp': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': True,
+        }
+    }
 }

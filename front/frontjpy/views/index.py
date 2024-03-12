@@ -1,5 +1,5 @@
 import justpy as jp
-from views.view import View
+from .view import View
 
 
 # @jp.SetRoute('/')

@@ -1,5 +1,5 @@
 import justpy as jp
-from components.navbar import Navbar
+from .navbar import Navbar
 
 
 class Base(jp.WebPage):

@@ -1,4 +1,5 @@
 import os
+
 import justpy as jp
 
 from authlib.integrations.requests_client import OAuth2Session
@@ -11,6 +12,8 @@ from views.customers import Customers
 from components.base import Base
 from components.router import Router
 
+app = jp.app
+
 ENV_FILE = find_dotenv()
 if ENV_FILE:
     load_dotenv(ENV_FILE)
@@ -22,7 +25,7 @@ session_dict = {}
 async def login(request):
     if request.session_id not in session_dict:
         session_dict[request.session_id] = {}
-    redirect_uri = "http://127.0.0.1:8002/auth/callback"
+    redirect_uri = f'{os.environ.get("HOST")}/auth/callback'
     client = OAuth2Session(client_id=os.environ.get("AUTH0_CLIENT_ID"),
                            client_secret=os.environ.get("AUTH0_CLIENT_SECRET"),
                            scope="openid profile email",
@@ -44,8 +47,7 @@ async def login(request):
 
 @jp.SetRoute('/auth/callback')
 async def callback(request):
-    redirect = "/auth/login"
-    if request.session_id in session_dict and 'state' in session_dict[request.session_id]:
+    if request.session_id in session_dict:
         session_data = session_dict[request.session_id]
         state = session_data.get('state')
         client = OAuth2Session(client_id=os.environ.get("AUTH0_CLIENT_ID"),
@@ -59,24 +61,23 @@ async def callback(request):
                                    authorization_response=authorization_response,
                                    audience="https://template-microservices/")
         session_data['token'] = token.get('access_token')
-        redirect = "/"
-
     wp = jp.WebPage()
     jp.P(text="wait to redirect", a=wp)
 
     async def page_ready(self, msg):
         print("redirecting")
-        self.redirect = redirect
+        self.redirect = "/"
     wp.on("page_ready", page_ready)
     return wp
 
 
 @jp.SetRoute('/{path}')
-def app(request):
+def home(request):
     if request.session_id not in session_dict:
         session_dict[request.session_id] = {}
     token = session_dict[request.session_id].get('token')
     wp = Base(token=token)
+    jp.P(text=request.session_id, a=wp.footer)
     views = [View(page=wp, token=token, a=wp.content) for View in [Index, Books, BookForm, Customers]]
     router = Router(views=views, root=wp, request=request)
     wp.navbar.init_router(router)
@@ -86,7 +87,4 @@ def app(request):
     return wp
 
 
-if __name__ == "__main__":
-    jp.justpy(app)
-
-
+jp.justpy(home, start_server=False)

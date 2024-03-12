@@ -2,7 +2,7 @@ import asyncio
 import justpy as jp
 import os
 import requests
-from views.view import View
+from .view import View
 
 
 # # @jp.SetRoute('/books')
@@ -10,11 +10,6 @@ from views.view import View
 #     wp = Base()
 #     jp.P(text="books", a=wp.content)
 #     return wp
-
-def url():
-    host = os.environ.get("API_HOST")
-    port = os.environ.get("API_PORT")
-    return f"http://{host}:{port}"
 
 
 class Books(View):
@@ -52,7 +47,10 @@ class Books(View):
     @staticmethod
     def get_books():
         endpoint = "/api/books/"
-        response = requests.get(url() + endpoint)
+        try:
+            response = requests.get(os.environ.get("API_HOST") + endpoint)
+        except requests.exceptions.ConnectionError:
+            return [{'title': 'connection error'}]
         data = response.json()
         return data
 

@@ -24,9 +24,28 @@ services:
     environment:
       - DEBUG=True
       - DJANGO_SETTINGS_MODULE=gateproj.settings
+      - DJANGO_LOG_LEVEL=DEBUG
       - BOOKS_HOST=http://books:80
     depends_on:
       books:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ../../front/
+      dockerfile: ./deployment/Dockerfile
+    container_name: "frontend"
+    ports:
+      - "8000:8000"
+    networks:
+      - front
+      - back
+    environment:
+      - HOST=http://localhost:8000
+      - API_HOST=http://gateway:8001
+
+    depends_on:
+      gateway:
         condition: service_started
 
 networks:

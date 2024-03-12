@@ -1,13 +1,7 @@
 import justpy as jp
 import os
 import requests
-from views.view import View
-
-
-def url():
-    host = os.environ.get("API_HOST")
-    port = os.environ.get("API_PORT")
-    return f"http://{host}:{port}"
+from .view import View
 
 
 button_classes = 'bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded m-2'
@@ -40,29 +34,34 @@ class BookForm(View):
         year_label.for_component = in3
 
         submit_button = jp.Input(value='Submit Form', type='submit', a=self.form1, classes=button_classes)
-
+        self.errors = jp.Div(show=False, a=root)
+        self.error = jp.P(text="error", a=self.errors)
         root = self
 
         def submit_form(self, msg):
             data = {}
             for field in msg.form_data:
                 if field.type != 'submit':
-                    print(field)
-                    print(field.name)
-                    print(field.value)
                     data[field.name] = field.value
             ok, errors = BookForm.submit_book(data=data, token=root.token)
             if ok:
                 self.router.set_view(name='books-list')
             else:
-                print(errors)
+                root.errors.show = True
+                root.error.text = errors
+
         self.form1.on('submit', submit_form)
 
     @staticmethod
     def submit_book(data, token):
         endpoint = "/api/books/"
-        headers = {"Authorization": f"Bearer {token}"}
-        response = requests.post(url() + endpoint, json=data, headers=headers)
+        headers = {}
+        if token:
+            headers.update({"Authorization": f"Bearer {token}"})
+        try:
+            response = requests.post(os.environ.get("API_HOST") + endpoint, json=data, headers=headers)
+        except ConnectionError:
+            return False, "connection error"
         if response.status_code == 201:
             return True, None
         errors = response.json()
